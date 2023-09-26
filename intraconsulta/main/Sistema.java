@@ -48,7 +48,7 @@ public class Sistema {
 		boolean encontrado = false;
 		int i=0;
 		while(!encontrado && i<this.materias.size()) {
-			if(this.materias.get(i)!=null  && this.materias.get(i).getId().equals(idMateria)) {
+			if(this.materias.get(i).getId().equals(idMateria)) {
 				materia = this.materias.get(i);
 				encontrado = true;
 			}
@@ -71,7 +71,7 @@ public class Sistema {
 		boolean encontrado = false;
 		int i=0;
 		while(!encontrado && i<this.alumnos.size()) {
-			if(this.alumnos.get(i)!=null && this.alumnos.get(i).getDni().equals(dniAlumno)) {
+			if(this.alumnos.get(i).getDni().equals(dniAlumno)) {
 				alumno = this.alumnos.get(i);
 				encontrado = true;
 			}
@@ -93,7 +93,7 @@ public class Sistema {
 	private boolean verificarCicloLectivo(CicloLectivo cicloLectivo) {
 		boolean verificado = true;
 		for(int i=0; i<this.fechas.size(); i++) {
-			if( !this.fechas.get(i).getInicio().isAfter(cicloLectivo.getFin()) && 
+			if(!this.fechas.get(i).getInicio().isAfter(cicloLectivo.getFin()) && 
 					!cicloLectivo.getInicio().isAfter(this.fechas.get(i).getFin()) &&
 					!this.fechas.get(i).getInicioInscripcion().isAfter(cicloLectivo.getFinInscripcion()) &&
 					!cicloLectivo.getInicioInscripcion().isAfter(this.fechas.get(i).getFinInscripcion())){
@@ -108,7 +108,7 @@ public class Sistema {
 		boolean encontrado = false;
 		int i=0;
 		while(!encontrado && i<this.fechas.size()) {
-			if(this.fechas.get(i)!=null && this.fechas.get(i).getId().equals(idCicloLectivo)) {
+			if(this.fechas.get(i).getId().equals(idCicloLectivo)) {
 				cicloLectivo = this.fechas.get(i);
 				encontrado = true;
 			}
@@ -149,7 +149,7 @@ public class Sistema {
 		boolean encontrado = false;
 		int i=0;
 		while(!encontrado && i<this.comisiones.size()) {
-			if(this.comisiones.get(i)!=null && this.comisiones.get(i).getId().equals(idComision)) {
+			if(this.comisiones.get(i).getId().equals(idComision)) {
 				comision = this.comisiones.get(i);
 				encontrado = true;
 			}
@@ -172,7 +172,7 @@ public class Sistema {
 		boolean encontrado = false;
 		int i=0;
 		while(!encontrado && i<this.profesores.size()) {
-			if(this.profesores.get(i)!=null && this.profesores.get(i).getDni().equals(dniProfesor)) {
+			if(this.profesores.get(i).getDni().equals(dniProfesor)) {
 				profesor = this.profesores.get(i);
 				encontrado = true;
 			}
@@ -186,7 +186,7 @@ public class Sistema {
 		boolean asignado = false;
 		if(comision!=null && this.buscarProfesor(dniProfesor)!=null &&
 				this.verificarAsignacionProfesorAComision(comision.getProfesoresAsignados(), dniProfesor) &&
-				comision.cantidadDeProfesoresAsignables()) {
+				comision.vacantesProfesores()) {
 			comision.asignarProfesor(dniProfesor);
 			asignado = true;
 		}
@@ -198,7 +198,7 @@ public class Sistema {
 		boolean verificado = true;
 		int i=0;
 		while(verificado && i<profesoresAsignados.size()) {
-			if(profesoresAsignados.get(i)!=null && profesoresAsignados.get(i).getDniProfesor().equals(dniProfesor)) {
+			if(profesoresAsignados.get(i).getDniProfesor().equals(dniProfesor)) {
 				verificado = false;
 			}
 			i++;
@@ -267,15 +267,17 @@ public class Sistema {
 		return aprobada;
 	}
 	
-	public ArrayList<Materia> materiasAprobadasPorUnAlumno(Integer idAlumno){
+	public ArrayList<Materia> materiasAprobadasPorUnAlumno(Integer dniAlumno){
 		ArrayList<Materia> aprobadas = new ArrayList<Materia>();
 		for(int i=0; i<this.comisiones.size(); i++) {
-			if(this.comisiones.get(i).alumnoAproboCursada(idAlumno)) {
+			if(this.comisiones.get(i).alumnoAproboCursada(dniAlumno)) {
 				aprobadas.add(this.buscarMateria(this.comisiones.get(i).getIdMateria()));
 			}
 		}
 		return aprobadas;
 	}
+	
+
 	
 	//este metodo es para verificar que la asignacion del alumno no sea fuera de la fecha de inscripcion
 	private boolean verificarFechasDeInscripcion(CicloLectivo cicloLectivo) {
@@ -298,7 +300,7 @@ public class Sistema {
 		return verificado;
 	}
 	
-	//este metodo verifica si el alumno no cursa otra materia el mismo turno y ciclo
+	//este metodo verifica si el alumno no cursa otra materia el mismo turno, dia y ciclo
 	private boolean verificarDisponibilidad(Integer idCicloLectivo, Turno turno, Dia dia, Integer idAlumno) {
 		boolean verificado = true;
 		ArrayList<Comision> cursadas = this.comisionesCursadas(idAlumno);
@@ -338,7 +340,7 @@ public class Sistema {
 		boolean encontrado = false;
 		int i=0;
 		while(!encontrado && i<this.aulas.size()) {
-			if(this.aulas.get(i)!=null && this.aulas.get(i).getId().equals(idAula)) {
+			if(this.aulas.get(i).getId().equals(idAula)) {
 				aula = this.aulas.get(i);
 				encontrado = true;
 			}
@@ -357,13 +359,66 @@ public class Sistema {
 		return asignado;
 	}
 	
-	public boolean registrarNota(Integer idComision, Integer dniAlumno, Integer nota) {
+	public boolean registrarNota(Integer idComision, Integer dniAlumno, Integer nota, TipoNota tipoNota) {
 		boolean registrado = false;
 		Comision comision = this.buscarComision(idComision);
-		if(nota>=0 && nota<=10 && comision.tieneAlumno(dniAlumno)) {
-			comision.asignarNotaAlumno(dniAlumno, nota);
+		if(nota>0 && nota<=10 && comision.tieneAlumno(dniAlumno) && this.verificarNota(this.buscarMateria(comision.getIdMateria()).getCorrelativas(), dniAlumno, nota)) {
+			registrado = comision.asignarNotaAlumno(dniAlumno, nota, tipoNota);
 		}
 		return registrado;
+	}
+	
+	//este metodo es para verificar que la nota no sea mayor a 7 si no tiene las correlativas promocionadas
+	private boolean verificarNota(ArrayList<Integer> idCorrelativas, Integer dniAlumno, Integer nota) {
+		boolean verificado = true;
+		if(nota>=7 && !this.correlativasPromocionadas(idCorrelativas, dniAlumno)) {
+			verificado = false;
+		}
+		return verificado;
+	}
+	
+	//este metodo es para verificar que el alumno tiene las correlativas promocionadas
+	private boolean correlativasPromocionadas(ArrayList<Integer> idCorrelativas, Integer dniAlumno) {
+		boolean promociono = true;
+		int i=0;
+		while(promociono && i<idCorrelativas.size()) {
+			if(!this.materiaPromocionada(idCorrelativas.get(i), dniAlumno)) {
+				promociono = false;
+			}
+			i++;
+		}
+		return promociono;
+	}	
+	
+	//este metodo verifica que la materia esta promocionada por el alumno
+	private boolean materiaPromocionada(Integer idMateria, Integer dniAlumno) {
+		ArrayList<Materia> promocionadas = this.materiasPromocionadasPorUnAlumno(dniAlumno);
+		boolean promociono = false;
+		int i=0;
+		while(!promociono && i<promocionadas.size()) {
+			if(promocionadas.get(i).getId().equals(idMateria)) {
+				promociono = true;
+			}
+			i++;
+		}
+		return promociono;
+	}
+	
+	public ArrayList<Materia> materiasPromocionadasPorUnAlumno(Integer dniALumno){
+		ArrayList<Materia> promocionadas = new ArrayList<Materia>();
+		for(int i=0; i<this.comisiones.size(); i++) {
+			if(this.comisiones.get(i).alumnoPromocionoCursada(dniALumno)) {
+				promocionadas.add(this.buscarMateria(this.comisiones.get(i).getIdMateria()));
+			}
+		}
+		return promocionadas;
+	}
+	
+	public Integer obtenerNotaFinal(Integer idComision, Integer dniAlumno) {
+		Integer notaFinal = 0;
+		Comision comision = this.buscarComision(idComision);
+		notaFinal = comision.obtenerNotaFinalAlumno(dniAlumno);
+		return notaFinal;
 	}
 	
 }

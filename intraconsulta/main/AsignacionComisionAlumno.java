@@ -39,8 +39,4 @@ public class AsignacionComisionAlumno {
 		this.notasAlumno = new RegistroDeNotas(dniAlumno);
 	}
 	
-	public boolean comisionAprobada() {
-		return this.notasAlumno.aprobado();
-	}
-
 }

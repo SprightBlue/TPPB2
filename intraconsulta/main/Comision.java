@@ -22,7 +22,7 @@ public class Comision {
 		this.setIdCicloLectivo(idCicloLectivo);
 		this.setTurno(turno);
 		this.setDia(dia);
-		this.setIdAula(0);
+		this.idAula = 0;
 		this.profesoresAsignados = new ArrayList<AsignacionComisionProfesor>();
 		this.alumnosAsignados = new ArrayList<AsignacionComisionAlumno>();
 	}
@@ -107,26 +107,32 @@ public class Comision {
 		return curso;
 	}
 	
-	public boolean alumnoAproboCursada(Integer idAlumno) {
+	public boolean alumnoAproboCursada(Integer dniAlumno) {
 		boolean aprobo = false;
 		int i=0;
 		while(!aprobo && i<this.alumnosAsignados.size()) {
-			if(this.alumnosAsignados.get(i).getDniAlumno().equals(idAlumno) && this.alumnosAsignados.get(i).comisionAprobada()) {
+			if(this.alumnosAsignados.get(i).getDniAlumno().equals(dniAlumno) && this.alumnosAsignados.get(i).getNotasAlumno().aprobado()) {
 				aprobo = true;
 			}
 			i++;
 		}
 		return aprobo;
 	}
-
-	public void asignarNotaAlumno(Integer dniAlumno, Integer nota) {
-		RegistroDeNotas notas = this.buscarNotasAlumnoAsignado(dniAlumno);
-		if(notas!=null) {
-			notas.setNota(nota);
-		}
-	}
 	
-	public RegistroDeNotas buscarNotasAlumnoAsignado(Integer dniAlumno) {
+	public boolean alumnoPromocionoCursada(Integer dniAlumno) {
+		boolean promociono = false;
+		int i=0;
+		while(!promociono && i<this.alumnosAsignados.size()) {
+			if(this.alumnosAsignados.get(i).getDniAlumno().equals(dniAlumno) && this.alumnosAsignados.get(i).getNotasAlumno().promociono()) {
+				promociono = true;
+			}
+			i++;
+		}
+		return promociono;
+	}
+
+	
+	public RegistroDeNotas buscarNotasAlumno(Integer dniAlumno) {
 		RegistroDeNotas notas = null;
 		boolean encontrado = false;
 		int i=0;
@@ -139,7 +145,7 @@ public class Comision {
 		return notas;
 	}
 	
-	public boolean cantidadDeProfesoresAsignables() {
+	public boolean vacantesProfesores() {
 		boolean asignable = true;
 		Integer cantidad = (this.alumnosAsignados.size()/20)+1;
 		if(this.profesoresAsignados.size()>=cantidad) {
@@ -148,4 +154,32 @@ public class Comision {
 		return asignable;
 	}
 
+	public boolean asignarNotaAlumno(Integer dniAlumno, Integer nota, TipoNota tipoNota) {
+		boolean asignado = false;
+		RegistroDeNotas notas = this.buscarNotasAlumno(dniAlumno);
+		switch(tipoNota) {
+		case PRIMERPARCIAL:
+			asignado = notas.setPrimerParcial(nota);
+			break;
+		case SEGUNDOPARCIAL:
+			asignado = notas.setSegundoParcial(nota);
+			break;
+		case PRIMERRECUPERATORIO:
+			asignado = notas.setPrimerRecuperatorio(nota);
+			break;
+		case SEGUNDORECUPERATORIO:
+			asignado = notas.setSegundoRecuperatorio(nota);
+			break;
+		}
+		return asignado;
+	}
+	
+	public Integer obtenerNotaFinalAlumno(Integer dniAlumno) {
+		Integer notaFinal = 0;
+		RegistroDeNotas notas = this.buscarNotasAlumno(dniAlumno);
+		notas.setNotaFinal();
+		notaFinal = notas.getNotaFinal();
+		return notaFinal;
+	}
+	
 }

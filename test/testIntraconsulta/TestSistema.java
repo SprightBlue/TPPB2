@@ -9,6 +9,7 @@ import main.Dia;
 import main.Materia;
 import main.Profesor;
 import main.Sistema;
+import main.TipoNota;
 import main.Turno;
 
 import static org.junit.Assert.*;
@@ -376,7 +377,9 @@ public class TestSistema {
 		Alumno alumno = new Alumno("Rodolfo", "Gutierrez");
 		sistema.agregarAlumno(alumno);
 		sistema.asignarAlumnoAComision(idComisionAprobada, alumno.getDni());
-		sistema.registrarNota(idComisionAprobada, alumno.getDni(), 7);
+		sistema.registrarNota(idComisionAprobada, alumno.getDni(), 7, TipoNota.PRIMERPARCIAL);
+		sistema.registrarNota(idComisionAprobada, alumno.getDni(), 7, TipoNota.SEGUNDOPARCIAL);
+		sistema.obtenerNotaFinal(idComisionAprobada, alumno.getDni());
 		Integer idComision = sistema.agregarComision(materia.getId(), fechas.getId(), Turno.NOCHE, Dia.MARTES);
 		
 		assertFalse(sistema.asignarAlumnoAComision(idComision, alumno.getDni()));
@@ -397,6 +400,104 @@ public class TestSistema {
 		sistema.agregarProfesor(agustin);
 		
 		assertFalse(sistema.asignarProfesorAComision(idComision, agustin.getDni()));
+	}
+	
+	@Test
+	public void queSePuedaRegistrarLaNotaDelPrimerParcial() {
+		Sistema sistema = new Sistema("Intraconsulta");
+		Materia materia = new Materia("Programacion Basica II");
+		sistema.agregarMateria(materia);
+		CicloLectivo fechas = new CicloLectivo("2024-08-14", "2024-12-02", "2023-06-01", "2023-12-31");
+		sistema.agregarCicloLectivo(fechas);
+		Integer idComision = sistema.agregarComision(materia.getId(), fechas.getId(), Turno.MAÑANA, Dia.MIERCOLES);
+		Aula aula = new Aula(40);
+		sistema.agregarAula(aula);
+		sistema.asignarAulaAComision(idComision, aula.getId());
+		Alumno alumno = new Alumno("Rodolfo", "Gutierrez");
+		sistema.agregarAlumno(alumno);
+		sistema.asignarAlumnoAComision(idComision, alumno.getDni());
+		
+		assertTrue(sistema.registrarNota(idComision, alumno.getDni(), 7, TipoNota.PRIMERPARCIAL));
+	}
+	
+	@Test
+	public void queNoSePuedaRegistrarUnaNotaFueraDelRango() {
+		Sistema sistema = new Sistema("Intraconsulta");
+		Materia materia = new Materia("Programacion Basica II");
+		sistema.agregarMateria(materia);
+		CicloLectivo fechas = new CicloLectivo("2024-08-14", "2024-12-02", "2023-06-01", "2023-12-31");
+		sistema.agregarCicloLectivo(fechas);
+		Integer idComision = sistema.agregarComision(materia.getId(), fechas.getId(), Turno.MAÑANA, Dia.MIERCOLES);
+		Aula aula = new Aula(40);
+		sistema.agregarAula(aula);
+		sistema.asignarAulaAComision(idComision, aula.getId());
+		Alumno alumno = new Alumno("Rodolfo", "Gutierrez");
+		sistema.agregarAlumno(alumno);
+		sistema.asignarAlumnoAComision(idComision, alumno.getDni());
+		
+		assertFalse(sistema.registrarNota(idComision, alumno.getDni(), 11, TipoNota.PRIMERPARCIAL));
+	}
+	
+	@Test
+	public void queNoSePuedaRegistrarNotaDeLosDosRecuperatorios() {
+		Sistema sistema = new Sistema("Intraconsulta");
+		Materia materia = new Materia("Programacion Basica II");
+		sistema.agregarMateria(materia);
+		CicloLectivo fechas = new CicloLectivo("2024-08-14", "2024-12-02", "2023-06-01", "2023-12-31");
+		sistema.agregarCicloLectivo(fechas);
+		Integer idComision = sistema.agregarComision(materia.getId(), fechas.getId(), Turno.MAÑANA, Dia.MIERCOLES);
+		Aula aula = new Aula(40);
+		sistema.agregarAula(aula);
+		sistema.asignarAulaAComision(idComision, aula.getId());
+		Alumno alumno = new Alumno("Rodolfo", "Gutierrez");
+		sistema.agregarAlumno(alumno);
+		sistema.asignarAlumnoAComision(idComision, alumno.getDni());
+		
+		assertTrue(sistema.registrarNota(idComision, alumno.getDni(), 7, TipoNota.PRIMERRECUPERATORIO));
+		
+		assertFalse(sistema.registrarNota(idComision, alumno.getDni(), 5, TipoNota.SEGUNDORECUPERATORIO));
+	}
+	
+	@Test
+	public void queSePuedaObtenerLaNotaFinalDelAlumno() {
+		Sistema sistema = new Sistema("Intraconsulta");
+		Materia materia = new Materia("Programacion Basica II");
+		sistema.agregarMateria(materia);
+		CicloLectivo fechas = new CicloLectivo("2024-08-14", "2024-12-02", "2023-06-01", "2023-12-31");
+		sistema.agregarCicloLectivo(fechas);
+		Integer idComision = sistema.agregarComision(materia.getId(), fechas.getId(), Turno.MAÑANA, Dia.MIERCOLES);
+		Aula aula = new Aula(40);
+		sistema.agregarAula(aula);
+		sistema.asignarAulaAComision(idComision, aula.getId());
+		Alumno alumno = new Alumno("Rodolfo", "Gutierrez");
+		sistema.agregarAlumno(alumno);
+		sistema.asignarAlumnoAComision(idComision, alumno.getDni());
+		sistema.registrarNota(idComision, alumno.getDni(), 7, TipoNota.PRIMERPARCIAL);
+		sistema.registrarNota(idComision, alumno.getDni(), 7, TipoNota.SEGUNDOPARCIAL);
+		
+		Integer notaEsperada = 7;
+		assertEquals(notaEsperada, sistema.obtenerNotaFinal(idComision, alumno.getDni()));
+	}
+	
+	@Test
+	public void queLaNotaFinalSea0PorNoTenerAprobadosLosExamenes() {
+		Sistema sistema = new Sistema("Intraconsulta");
+		Materia materia = new Materia("Programacion Basica II");
+		sistema.agregarMateria(materia);
+		CicloLectivo fechas = new CicloLectivo("2024-08-14", "2024-12-02", "2023-06-01", "2023-12-31");
+		sistema.agregarCicloLectivo(fechas);
+		Integer idComision = sistema.agregarComision(materia.getId(), fechas.getId(), Turno.MAÑANA, Dia.MIERCOLES);
+		Aula aula = new Aula(40);
+		sistema.agregarAula(aula);
+		sistema.asignarAulaAComision(idComision, aula.getId());
+		Alumno alumno = new Alumno("Rodolfo", "Gutierrez");
+		sistema.agregarAlumno(alumno);
+		sistema.asignarAlumnoAComision(idComision, alumno.getDni());
+		sistema.registrarNota(idComision, alumno.getDni(), 2, TipoNota.PRIMERPARCIAL);
+		sistema.registrarNota(idComision, alumno.getDni(), 2, TipoNota.SEGUNDOPARCIAL);
+		
+		Integer notaEsperada = 0;
+		assertEquals(notaEsperada, sistema.obtenerNotaFinal(idComision, alumno.getDni()));
 	}
 	
 }
