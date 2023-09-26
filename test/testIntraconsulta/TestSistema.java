@@ -382,4 +382,21 @@ public class TestSistema {
 		assertFalse(sistema.asignarAlumnoAComision(idComision, alumno.getDni()));
 	}
 	
+	@Test
+	public void queNoSePuedaAsignarProfesorSiSuperaLaCantidadPorAlumno() {
+		Sistema sistema = new Sistema("Intraconsulta");
+		Materia materia = new Materia("Programacion Basica II");
+		sistema.agregarMateria(materia);
+		CicloLectivo fechas = new CicloLectivo("2023-08-14", "2023-12-02", "2023-07-27", "2023-08-11");
+		sistema.agregarCicloLectivo(fechas);
+		Integer idComision = sistema.agregarComision(materia.getId(), fechas.getId(), Turno.MAÑANA, Dia.MIERCOLES);
+		Profesor juan = new Profesor("Juan", "Bautista");
+		sistema.agregarProfesor(juan);
+		sistema.asignarProfesorAComision(idComision, juan.getDni());
+		Profesor agustin = new Profesor("Agustin", "Rizzo");
+		sistema.agregarProfesor(agustin);
+		
+		assertFalse(sistema.asignarProfesorAComision(idComision, agustin.getDni()));
+	}
+	
 }

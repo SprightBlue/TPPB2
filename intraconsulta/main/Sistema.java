@@ -185,7 +185,8 @@ public class Sistema {
 		Comision comision = this.buscarComision(idComision);
 		boolean asignado = false;
 		if(comision!=null && this.buscarProfesor(dniProfesor)!=null &&
-				this.verificarAsignacionProfesorAComision(comision.getProfesoresAsignados(), dniProfesor)) {
+				this.verificarAsignacionProfesorAComision(comision.getProfesoresAsignados(), dniProfesor) &&
+				comision.cantidadDeProfesoresAsignables()) {
 			comision.asignarProfesor(dniProfesor);
 			asignado = true;
 		}

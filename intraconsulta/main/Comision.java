@@ -138,5 +138,14 @@ public class Comision {
 		}
 		return notas;
 	}
+	
+	public boolean cantidadDeProfesoresAsignables() {
+		boolean asignable = true;
+		Integer cantidad = (this.alumnosAsignados.size()/20)+1;
+		if(this.profesoresAsignados.size()>=cantidad) {
+			asignable = false;
+		}
+		return asignable;
+	}
 
 }
