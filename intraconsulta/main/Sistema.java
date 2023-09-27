@@ -209,7 +209,7 @@ public class Sistema {
 	public boolean agregarCorrelativa(Integer idMateria, Integer idCorrelativa) {
 		boolean agregado = false;
 		Materia materia = this.buscarMateria(idMateria);
-		if(materia!=null && this.buscarMateria(idCorrelativa)!=null && !materia.tieneCorrelativa(idCorrelativa)) {
+		if(!idMateria.equals(idCorrelativa) && materia!=null && this.buscarMateria(idCorrelativa)!=null && !materia.tieneCorrelativa(idCorrelativa)) {
 			materia.agregarCorrelativa(idCorrelativa);
 			agregado = true;
 		}
@@ -419,6 +419,25 @@ public class Sistema {
 		Comision comision = this.buscarComision(idComision);
 		notaFinal = comision.obtenerNotaFinalAlumno(dniAlumno);
 		return notaFinal;
+	}
+	
+	public Integer calcularPromedio(Integer dniAlumno) {
+		Integer sumaTotal=0;
+		Integer cantidad=0;
+		ArrayList<Comision> cursadas = this.comisionesCursadas(dniAlumno);
+		for(int i=0; i<cursadas.size(); i++) {
+			if(cursadas.get(i).obtenerNotaFinalAlumno(dniAlumno)!=0) {
+				sumaTotal += cursadas.get(i).obtenerNotaFinalAlumno(dniAlumno);
+				cantidad++;
+			}
+		}
+		return sumaTotal/cantidad;
+	}
+	
+	public ArrayList<Materia> obtenerMateriasQueFaltanCursarParaElAlumno(Integer dniAlumno){
+		ArrayList<Materia> materiasSinCursar = this.materias;
+		materiasSinCursar.removeAll(this.materiasAprobadasPorUnAlumno(dniAlumno));
+		return materiasSinCursar;
 	}
 	
 }

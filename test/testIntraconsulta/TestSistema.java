@@ -14,6 +14,8 @@ import main.Turno;
 
 import static org.junit.Assert.*;
 
+import java.util.ArrayList;
+
 public class TestSistema {
 	
 	@Test
@@ -498,6 +500,129 @@ public class TestSistema {
 		
 		Integer notaEsperada = 0;
 		assertEquals(notaEsperada, sistema.obtenerNotaFinal(idComision, alumno.getDni()));
+	}
+	
+	@Test
+	public void queSePuedaObtenerMateriasAprobadasPorElAlumno() {
+		Sistema sistema = new Sistema("Intraconsulta");
+		Materia pb1 = new Materia("Programacion Basica I");
+		sistema.agregarMateria(pb1);
+		CicloLectivo fechas = new CicloLectivo("2024-08-14", "2024-12-02", "2023-06-01", "2023-12-31");
+		sistema.agregarCicloLectivo(fechas);
+		Integer idPb1Comision = sistema.agregarComision(pb1.getId(), fechas.getId(), Turno.NOCHE, Dia.MARTES);
+		Aula aula = new Aula(40);
+		sistema.agregarAula(aula);
+		sistema.asignarAulaAComision(idPb1Comision, aula.getId());
+		Alumno alumno = new Alumno("Rodolfo", "Gutierrez");
+		sistema.agregarAlumno(alumno);
+		sistema.asignarAlumnoAComision(idPb1Comision, alumno.getDni());
+		sistema.registrarNota(idPb1Comision, alumno.getDni(), 7, TipoNota.PRIMERPARCIAL);
+		sistema.registrarNota(idPb1Comision, alumno.getDni(), 7, TipoNota.SEGUNDOPARCIAL);
+		sistema.obtenerNotaFinal(idPb1Comision, alumno.getDni());
+		Materia pb2 = new Materia("Programacion Basica II");
+		sistema.agregarMateria(pb2);
+		sistema.agregarCorrelativa(pb2.getId(), pb1.getId());
+		Integer idPb2Comision = sistema.agregarComision(pb2.getId(), fechas.getId(), Turno.MAÑANA, Dia.MIERCOLES);
+		sistema.agregarAula(aula);
+		sistema.asignarAulaAComision(idPb2Comision, aula.getId());
+		sistema.asignarAlumnoAComision(idPb2Comision, alumno.getDni());
+		sistema.registrarNota(idPb2Comision, alumno.getDni(), 4, TipoNota.PRIMERPARCIAL);
+		sistema.registrarNota(idPb2Comision, alumno.getDni(), 4, TipoNota.SEGUNDORECUPERATORIO);
+		sistema.obtenerNotaFinal(idPb2Comision, alumno.getDni());
+		ArrayList<Materia> aprobadas = sistema.materiasAprobadasPorUnAlumno(alumno.getDni());
+		
+		assertTrue(aprobadas.contains(pb1));
+		assertTrue(aprobadas.contains(pb2));
+		
+		Materia pw = new Materia("Programacion Web");
+		
+		assertFalse(aprobadas.contains(pw));
+	}
+	
+	@Test
+	public void queSeObtengaElPromedioDelAlumno() {
+		Sistema sistema = new Sistema("Intraconsulta");
+		Materia pb1 = new Materia("Programacion Basica I");
+		sistema.agregarMateria(pb1);
+		CicloLectivo fechas = new CicloLectivo("2024-08-14", "2024-12-02", "2023-06-01", "2023-12-31");
+		sistema.agregarCicloLectivo(fechas);
+		Integer idPb1Comision = sistema.agregarComision(pb1.getId(), fechas.getId(), Turno.NOCHE, Dia.MARTES);
+		Aula aula = new Aula(40);
+		sistema.agregarAula(aula);
+		sistema.asignarAulaAComision(idPb1Comision, aula.getId());
+		Alumno alumno = new Alumno("Rodolfo", "Gutierrez");
+		sistema.agregarAlumno(alumno);
+		sistema.asignarAlumnoAComision(idPb1Comision, alumno.getDni());
+		sistema.registrarNota(idPb1Comision, alumno.getDni(), 7, TipoNota.PRIMERPARCIAL);
+		sistema.registrarNota(idPb1Comision, alumno.getDni(), 7, TipoNota.SEGUNDOPARCIAL);
+		sistema.obtenerNotaFinal(idPb1Comision, alumno.getDni());
+		Materia pb2 = new Materia("Programacion Basica II");
+		sistema.agregarMateria(pb2);
+		sistema.agregarCorrelativa(pb2.getId(), pb1.getId());
+		Integer idPb2Comision = sistema.agregarComision(pb2.getId(), fechas.getId(), Turno.MAÑANA, Dia.MIERCOLES);
+		sistema.agregarAula(aula);
+		sistema.asignarAulaAComision(idPb2Comision, aula.getId());
+		sistema.asignarAlumnoAComision(idPb2Comision, alumno.getDni());
+		sistema.registrarNota(idPb2Comision, alumno.getDni(), 4, TipoNota.PRIMERPARCIAL);
+		sistema.registrarNota(idPb2Comision, alumno.getDni(), 4, TipoNota.SEGUNDORECUPERATORIO);
+		sistema.obtenerNotaFinal(idPb2Comision, alumno.getDni());
+		
+		Integer promedioEsperado = (7+4)/2;
+		assertEquals(promedioEsperado, sistema.calcularPromedio(alumno.getDni()));
+	}
+	
+	@Test
+	public void queSeObtengaLasMateriasQueFaltanCursarAlAlumno() {
+		Sistema sistema = new Sistema("Intraconsulta");
+		Materia pb1 = new Materia("Programacion Basica I");
+		sistema.agregarMateria(pb1);
+		Materia pb2 = new Materia("Programacion Basica II");
+		sistema.agregarMateria(pb2);
+		CicloLectivo fechas = new CicloLectivo("2024-08-14", "2024-12-02", "2023-06-01", "2023-12-31");
+		sistema.agregarCicloLectivo(fechas);
+		Integer idComision = sistema.agregarComision(pb1.getId(), fechas.getId(), Turno.MAÑANA, Dia.MIERCOLES);
+		Aula aula = new Aula(40);
+		sistema.agregarAula(aula);
+		sistema.asignarAulaAComision(idComision, aula.getId());
+		Alumno alumno = new Alumno("Rodolfo", "Gutierrez");
+		sistema.agregarAlumno(alumno);
+		ArrayList<Materia> materias = sistema.obtenerMateriasQueFaltanCursarParaElAlumno(alumno.getDni());
+		
+		assertTrue(materias.contains(pb1));
+		assertTrue(materias.contains(pb2));
+	}
+	
+	@Test
+	public void queNoTengaMateriasPorCursarElAlumno() {
+		Sistema sistema = new Sistema("Intraconsulta");
+		Materia pb1 = new Materia("Programacion Basica I");
+		sistema.agregarMateria(pb1);
+		CicloLectivo fechas = new CicloLectivo("2024-08-14", "2024-12-02", "2023-06-01", "2023-12-31");
+		sistema.agregarCicloLectivo(fechas);
+		Integer idPb1Comision = sistema.agregarComision(pb1.getId(), fechas.getId(), Turno.NOCHE, Dia.MARTES);
+		Aula aula = new Aula(40);
+		sistema.agregarAula(aula);
+		sistema.asignarAulaAComision(idPb1Comision, aula.getId());
+		Alumno alumno = new Alumno("Rodolfo", "Gutierrez");
+		sistema.agregarAlumno(alumno);
+		sistema.asignarAlumnoAComision(idPb1Comision, alumno.getDni());
+		sistema.registrarNota(idPb1Comision, alumno.getDni(), 7, TipoNota.PRIMERPARCIAL);
+		sistema.registrarNota(idPb1Comision, alumno.getDni(), 7, TipoNota.SEGUNDOPARCIAL);
+		sistema.obtenerNotaFinal(idPb1Comision, alumno.getDni());
+		Materia pb2 = new Materia("Programacion Basica II");
+		sistema.agregarMateria(pb2);
+		sistema.agregarCorrelativa(pb2.getId(), pb1.getId());
+		Integer idPb2Comision = sistema.agregarComision(pb2.getId(), fechas.getId(), Turno.MAÑANA, Dia.MIERCOLES);
+		sistema.agregarAula(aula);
+		sistema.asignarAulaAComision(idPb2Comision, aula.getId());
+		sistema.asignarAlumnoAComision(idPb2Comision, alumno.getDni());
+		sistema.registrarNota(idPb2Comision, alumno.getDni(), 4, TipoNota.PRIMERPARCIAL);
+		sistema.registrarNota(idPb2Comision, alumno.getDni(), 4, TipoNota.SEGUNDORECUPERATORIO);
+		sistema.obtenerNotaFinal(idPb2Comision, alumno.getDni());
+		ArrayList<Materia> materias = sistema.obtenerMateriasQueFaltanCursarParaElAlumno(alumno.getDni());
+		
+		assertFalse(materias.contains(pb1));
+		assertFalse(materias.contains(pb2));
 	}
 	
 }
